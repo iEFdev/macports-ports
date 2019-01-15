@@ -1,0 +1,985 @@
+diff --git a/README b/README
+index 480f2e6..cdbca61 100644
+--- a/README
++++ b/README
+@@ -1,3 +1,31 @@
++
++
++This fork of the mod_fastcgi code compiles against Apache 2.4.
++This fork of the FastCGI code compiles against apache24.
++
++
++PATCHES in the Byte branch
++~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Hey there! You found the Byte branch. Well done.
++
++We keep some patches in here:
++
++* byte-compile-against-apache24.diff
++
++Compile against Apache 2.4
++
++* byte-new-packet-type-byte_acc.diff
++
++This is a new FCGI packet type that we invented to transport CPU usage information
++from the FCGI process manager to the Apache webserver. You should not apply this
++patch if you do not also have the FCGI packet implemented, allthough it should not
++hurt to have support for this packet.
++
++
++
++
++
+ README for mod_fastcgi
+ ~~~~~~~~~~~~~~~~~~~~~~
+ mod_fastcgi is a module for the Apache web server, that enables
+diff --git a/debian/README.source b/debian/README.source
+new file mode 100644
+index 0000000..85880c2
+--- /dev/null
++++ b/debian/README.source
+@@ -0,0 +1,35 @@
++This package uses CDBS (and therefore simple-patchsys.mk) in order to 
++apply patches to the upstream source. Patches are stored in 
++debian/patches and their filenames usually end in .patch or .diff .
++For further details, see the man page for cdbs-edit-patch.
++
++All commands described below should be run from the top directory of the 
++package source tree, unless otherwise stated.
++
++ * To generate the fully patched source, in a form ready for
++   editing, that would be built to create Debian packages, run: 
++
++     make -f debian/rules apply-patches
++
++   Note: It has been proposed that, in future, this should happen 
++   automatically when you run dpkg-source -x on a CDBS 
++   simple-patchsys.mk source package.  However, this proposal has 
++   apparently not yet been implemented, so for now you have to do 
++   it yourself like this.
++
++ * To modify the source and save those modifications so that
++   they will be applied when building the package, pick a
++   suitably informative patch file name, for example
++   01_add_README.source_file.patch, and then run:
++
++     cdbs-edit-patch 01_add_README.source_file.patch
++
++   This will place you in a new shell in a temporary copy of the 
++   source tree.  Make your desired modifications to it, and then 
++   exit the shell to create the patch file containing them (this 
++   file will appear in debian/patches).
++
++ * To remove source modifications that are currently being
++   applied when building the package, run:
++
++     make -f debian/rules reverse-patches
+diff --git a/debian/changelog b/debian/changelog
+index 5086118..baf79a7 100644
+--- a/debian/changelog
++++ b/debian/changelog
+@@ -1,10 +1,143 @@
+-libapache-mod-fastcgi (2.4.1) unstable; urgency=low
++libapache-mod-fastcgi (2.4.7~0910052141-1byte3) unstable; urgency=low
+ 
+-  * Debian builds adopted by upstream.  See the CHANGES file for a
+-    list of changes since the last release.  Patches from the Debian
+-    project most welcome :-)
++  * Incorporate the upstream release.
++    - gid_t fixes are now upstream.
++    - Status, Location and Content-Type headers may now be duplicated.
++      Drop the Byte patch.
+ 
+- -- Sam Vilain <sam@vilain.net>  Thu, 13 Nov 2003 02:00:37 +0000
++ -- Allard Hoeve <allard@byte.nl>  Wed, 07 Mar 2012 14:29:36 +0100
++
++libapache-mod-fastcgi (2.4.7~0910052141-1) unstable; urgency=low
++
++  * New upstream release
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Mon, 15 Nov 2010 16:31:58 +0900
++
++libapache-mod-fastcgi (2.4.6-1byte6+apache24) UNRELEASED; urgency=low
++
++  * Fix code so it compiles against 2.4.x.
++
++ -- Allard Hoeve <allard@byte.nl>  Wed, 23 Nov 2011 10:36:05 +0100
++
++libapache-mod-fastcgi (2.4.6-1byte5) UNRELEASED; urgency=low
++
++  * Reduce packet receive message to a debug message
++
++ -- Allard Hoeve <allard@byte.nl>  Wed, 23 Nov 2011 10:36:05 +0100
++
++libapache-mod-fastcgi (2.4.6-1byte4) UNRELEASED; urgency=low
++
++  * Gebruik geen long meer, alleen maar uint64_t
++
++ -- Allard Hoeve <allard@byte.nl>  Mon, 05 Sep 2011 11:19:31 +0200
++
++libapache-mod-fastcgi (2.4.6-1byte3) UNRELEASED; urgency=low
++
++  * Define a new packet type BYTE_ACC
++  * Rename patches naar goede namen met byte- prefix
++  * Handle Byte Accounting packets and save request notes
++
++ -- Allard Hoeve <allard@byte.nl>  Mon, 05 Sep 2011 11:13:00 +0200
++
++libapache-mod-fastcgi (2.4.6-1byte1) unstable; urgency=low
++
++  * Versie 1 van migratie naar quilt vanaf dpatch
++  * Ignore things after building. Compat level +3
++  * Simply skip duplicate headers instead of croaking
++  * Fix compile warnings
++
++ -- Allard Hoeve <allard@byte.nl>  Tue, 30 Aug 2011 16:33:08 +0200
++
++libapache-mod-fastcgi (2.4.6-1) unstable; urgency=low
++
++  * New upstream release
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Tue, 18 Mar 2008 11:23:42 +0900
++
++libapache-mod-fastcgi (2.4.2-10) unstable; urgency=low
++
++  * Drop apache1.3 module. (Closes: #429095)
++  * Now this cannot be built with apache2.0.
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Mon, 28 Jan 2008 15:17:58 +0900
++
++libapache-mod-fastcgi (2.4.2-9) unstable; urgency=low
++
++  * apply authn provider patch for apache2.2.
++    Thanks for Martin Furter (Closes: #414185)
++  * stop build apache 1.3 binary (Closes: #429095)
++  * fix suexec wrapper path (Closes: #415913)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Sat, 25 Aug 2007 17:13:50 +0900
++
++libapache-mod-fastcgi (2.4.2-8) unstable; urgency=high
++
++  * transit libapache2-mod-fastcgi for apache2.2
++  * Fix in built-in suexec path (Closes: #331617)
++  * remove unnecessary libc6 version dependency (Closes: #343519)
++  * apply patch to fix that apache2 segv on load (Closes: #343514)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Fri,  6 Oct 2006 20:53:21 +0900
++
++libapache-mod-fastcgi (2.4.2-7) unstable; urgency=low
++
++  * Update description. Thanks for Russ Allbery. (Closes: #320246)
++  * a2{en,dis}cmd automatically called in postinst/prerm. (Closes: #320246)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Sat,  6 Aug 2005 14:18:30 +0900
++
++libapache-mod-fastcgi (2.4.2-6) unstable; urgency=low
++
++  * fix typo in original document (Closes: #288270)
++  * add config topic in README.Debian (Closes: #298819)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Wed, 16 Mar 2005 22:27:02 +0900
++
++libapache-mod-fastcgi (2.4.2-5) unstable; urgency=high
++
++  * SuEXEC setting has been disabled in defualt. (Closes: #275201)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Tue, 19 Oct 2004 13:38:17 +0900
++
++libapache-mod-fastcgi (2.4.2-4) unstable; urgency=low
++
++  * Add Documentation
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Wed,  8 Sep 2004 18:15:05 +0900
++
++libapache-mod-fastcgi (2.4.2-3) unstable; urgency=high
++
++  * Back out the ill-fated apache2 LFS transition.
++  * Bump the apache2-{threaded,prefork}-dev build-dep to (>= 2.0.50-10)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Tue, 24 Aug 2004 22:44:11 +0900
++
++libapache-mod-fastcgi (2.4.2-2) unstable; urgency=medium
++
++  * rebuild for new ABI of apache2 2.0.50-9
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Tue, 17 Aug 2004 15:08:04 +0900
++
++libapache-mod-fastcgi (2.4.2-1) unstable; urgency=low
++
++  * Upstream Release.
++  * New Maintainer (Closes: #229214)
++
++ -- Tatsuki Sugiura <sugi@nemui.org>  Sat, 24 Jul 2004 06:07:47 +0900
++
++libapache-mod-fastcgi (2.4.0-4) unstable; urgency=low
++
++  * QA upload.
++  * libdb4.1-dev build-dependency removed. (Closes: #243017)
++  * Standards-Version updated.
++
++ -- Emanuele Rocca <ema@debian.org>  Tue, 13 Apr 2004 18:09:33 +0200
++
++libapache-mod-fastcgi (2.4.0-3) unstable; urgency=low
++
++  * Orphaned.
++
++ -- Davide Puricelli (evo) <evo@debian.org>  Fri, 23 Jan 2004 19:15:54 +0100
+ 
+ libapache-mod-fastcgi (2.4.0-2) unstable; urgency=low
+ 
+diff --git a/debian/compat b/debian/compat
+new file mode 100644
+index 0000000..45a4fb7
+--- /dev/null
++++ b/debian/compat
+@@ -0,0 +1 @@
++8
+diff --git a/debian/control b/debian/control
+index d27ede4..56c898d 100644
+--- a/debian/control
++++ b/debian/control
+@@ -1,18 +1,20 @@
+ Source: libapache-mod-fastcgi
+ Section: non-free/web
+ Priority: optional
+-Maintainer: Sam Vilain <sam@vilain.net>
+-Standards-Version: 3.5.8.0
+-Build-Depends: apache-dev (>= 1.3.0), debhelper (>> 3.0.0), lynx, libdb2-dev
++Maintainer: Tatsuki Sugiura <sugi@nemui.org>
++Standards-Version: 3.9.1
++Build-Depends: debhelper (>= 8.0.0), cdbs, apache2-dev (>= 2.4) | apache2-prefork-dev (>= 2.2.4) | apache2-threaded-dev (>= 2.2.4), libtool, libapr1-dev, pkg-config
++Uploaders: Taku YASUI <tach@debian.or.jp>
++Homepage: http://www.fastcgi.com/
+ 
+-Package: libapache-mod-fastcgi
++Package: libapache2-mod-fastcgi
+ Architecture: any
+-Depends: apache-common (>= 1.3.0), ${shlibs:Depends}
+-Description: FastCGI module for Apache
+- This package contains a FastCGI module for the Apache (1.3) web
+- server.
+- .
+- FastCGI is an open standard for communicating between a web server
+- and a web application, supported by many free and closed source web
+- servers.  It provides CGI-like functionality, without the need to
+- program to a particular server API.
++Depends: apache2.2-common (>= 2.2.4) | apache2-bin (>= 2.4), ${shlibs:Depends}
++Description: Apache 2 FastCGI module for long-running CGI scripts
++ This is a FastCGI module for the Apache 2.x web server.  FastCGI is an
++ open standard for communicating between a web server and a long-running
++ web application.  CGI scripts supporting FastCGI can be started as a
++ daemon and process multiple requests without restarting.  This is
++ particularly useful for scripts written in languages like Perl, as it
++ saves the cost of recompiling the scripts and its loaded modules with
++ each invocation.
+diff --git a/debian/copyright b/debian/copyright
+index 363314c..4a3f89b 100644
+--- a/debian/copyright
++++ b/debian/copyright
+@@ -5,6 +5,24 @@ It was downloaded from http://www.fastcgi.com/
+ 
+ Copyright:
+ 
++ Copyright (c) 1995-1996 Open Market, Inc.
++
++Authors:
++
++ *  Patches for Apache-1.1 provided by
++    Ralf S. Engelschall
++    <rse@en.muc.de>
++ *  Patches for Linux provided by
++    Scott Langley
++    <langles@vote-smart.org>
++ *  Patches for suexec handling by
++    Brian Grossman <brian@SoftHome.net> and
++    Rob Saccoccio <robs@ipass.net>
++
++--------------------------------------------------------------------
++ mod_fastcgi license terms
++--------------------------------------------------------------------
++
+ This FastCGI application library source and object code (the
+ "Software") and its documentation (the "Documentation") are
+ copyrighted by Open Market, Inc ("Open Market").  The following terms
+diff --git a/debian/fastcgi.conf2 b/debian/fastcgi.conf2
+new file mode 100644
+index 0000000..a252609
+--- /dev/null
++++ b/debian/fastcgi.conf2
+@@ -0,0 +1,5 @@
++<IfModule mod_fastcgi.c>
++  AddHandler fastcgi-script .fcgi
++  #FastCgiWrapper /usr/lib/apache2/suexec
++  FastCgiIpcDir /var/lib/apache2/fastcgi
++</IfModule>
+diff --git a/debian/fastcgi.load b/debian/fastcgi.load
+new file mode 100644
+index 0000000..de58558
+--- /dev/null
++++ b/debian/fastcgi.load
+@@ -0,0 +1 @@
++LoadModule fastcgi_module /usr/lib/apache2/modules/mod_fastcgi.so
+diff --git a/debian/libapache2-mod-fastcgi.README.Debian b/debian/libapache2-mod-fastcgi.README.Debian
+new file mode 100644
+index 0000000..5bcb205
+--- /dev/null
++++ b/debian/libapache2-mod-fastcgi.README.Debian
+@@ -0,0 +1,29 @@
++
++Config Tips
++----------------------
++
++ * How to run your FastCGI app
++
++   In case that FastCGI script has ".fcgi" suffix, you just put the script
++   in /usr/lib/cgi-bin (or other directory has "+ExecCGI") and can run it.
++
++ * Using non-".fcgi" suffix
++
++   If your app have non-".fcgi" suffix, add AddHandler/SetHandler to httpd.conf.
++   For exapmple;
++   ---
++     <Directory /var/www/myfcgiapp>
++       AddHandler fastcgi-script .yourext .pl .rb .cgi .sh
++     </Directory>
++   ---
++
++ * How to run under SuExec
++
++   make enable following line;
++     #FastCgiWrapper /usr/lib/apache2/suexec
++   in /etc/apache2/mods-enabled/fastcgi.conf
++
++ * If you change apache's uid
++
++   You need to change owner of /var/lib/apache*/fastcgi to uid of apache run.
++
+diff --git a/debian/libapache2-mod-fastcgi.docs b/debian/libapache2-mod-fastcgi.docs
+new file mode 100644
+index 0000000..77e5d65
+--- /dev/null
++++ b/debian/libapache2-mod-fastcgi.docs
+@@ -0,0 +1 @@
++docs/mod_fastcgi.html
+diff --git a/debian/libapache2-mod-fastcgi.postinst b/debian/libapache2-mod-fastcgi.postinst
+new file mode 100644
+index 0000000..aa4da70
+--- /dev/null
++++ b/debian/libapache2-mod-fastcgi.postinst
+@@ -0,0 +1,50 @@
++#! /bin/sh
++# postinst script for libapache-mod-fastcgi
++#
++# see: dh_installdeb(1)
++
++set -e
++
++# summary of how this script can be called:
++#        * <postinst> `configure' <most-recently-configured-version>
++#        * <old-postinst> `abort-upgrade' <new version>
++#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
++#          <new-version>
++#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
++#          <failed-install-package> <version> `removing'
++#          <conflicting-package> <version>
++# for details, see http://www.debian.org/doc/debian-policy/ or
++# the debian-policy package
++#
++# quoting from the policy:
++#     Any necessary prompting should almost always be confined to the
++#     post-installation script, and should be protected with a conditional
++#     so that unnecessary prompting doesn't happen if a package's
++#     installation fails and the `postinst' is called with `abort-upgrade',
++#     `abort-remove' or `abort-deconfigure'.
++
++case "$1" in
++    configure)
++	test ! -e /etc/apache2/mods-enabled/fcgid.load \
++	  -a ! -e /etc/apache2/mods-enabled/fastcgi.load \
++	  && a2enmod fastcgi
++    ;;
++
++    abort-upgrade|abort-remove|abort-deconfigure)
++
++    ;;
++
++    *)
++        echo "postinst called with unknown argument \`$1'" >&2
++        exit 1
++    ;;
++esac
++
++# dh_installdeb will replace this with shell code automatically
++# generated by other debhelper scripts.
++
++#DEBHELPER#
++
++exit 0
++
++
+diff --git a/debian/libapache2-mod-fastcgi.prerm b/debian/libapache2-mod-fastcgi.prerm
+new file mode 100644
+index 0000000..e945945
+--- /dev/null
++++ b/debian/libapache2-mod-fastcgi.prerm
+@@ -0,0 +1,41 @@
++#! /bin/sh
++# postrm script for libapache-mod-fastcgi
++#
++# see: dh_installdeb(1)
++
++set -e
++
++# summary of how this script can be called:
++#        * <postrm> `remove'
++#        * <postrm> `purge'
++#        * <old-postrm> `upgrade' <new-version>
++#        * <new-postrm> `failed-upgrade' <old-version>
++#        * <new-postrm> `abort-install'
++#        * <new-postrm> `abort-install' <old-version>
++#        * <new-postrm> `abort-upgrade' <old-version>
++#        * <disappearer's-postrm> `disappear' <r>overwrit>r> <new-version>
++# for details, see http://www.debian.org/doc/debian-policy/ or
++# the debian-policy package
++
++
++case "$1" in
++       remove)
++        test -e /etc/apache2/mods-enabled/fastcgi.load && a2dismod fastcgi
++        ;;
++       purge|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
++
++
++        ;;
++
++    *)
++        echo "postrm called with unknown argument \`$1'" >&2
++        exit 1
++
++esac
++
++# dh_installdeb will replace this with shell code automatically
++# generated by other debhelper scripts.
++
++#DEBHELPER#
++
++exit 0
+diff --git a/debian/patches/byte-compile-against-apache24.diff b/debian/patches/byte-compile-against-apache24.diff
+new file mode 100644
+index 0000000..417c03e
+--- /dev/null
++++ b/debian/patches/byte-compile-against-apache24.diff
+@@ -0,0 +1,137 @@
++Index: libapache-mod-fastcgi/fcgi.h
++===================================================================
++--- libapache-mod-fastcgi.orig/fcgi.h	2012-03-07 14:29:04.005720240 +0100
+++++ libapache-mod-fastcgi/fcgi.h	2012-03-07 14:29:07.830566657 +0100
++@@ -34,6 +34,10 @@
++ #define APACHE2
++ #endif
++ 
+++#ifdef AP_DECLARE_MODULE
+++#define APACHE24
+++#endif
+++
++ #ifdef APACHE2
++ 
++ #include <sys/stat.h>
++@@ -57,10 +61,16 @@
++ #define XtOffsetOf APR_OFFSETOF
++ #define ap_select select
++ 
+++#ifdef APACHE24
+++#define unixd_config ap_unixd_config
+++#endif
+++
+++#ifdef APACHE2
++ #define ap_user_id        unixd_config.user_id
++ #define ap_group_id       unixd_config.group_id
++ #define ap_user_name      unixd_config.user_name
++ #define ap_suexec_enabled unixd_config.suexec_enabled
+++#endif
++ 
++ #ifndef S_ISDIR
++ #define S_ISDIR(m)      (((m)&(S_IFMT)) == (S_IFDIR))
++@@ -365,42 +375,42 @@
++ #ifdef APACHE2
++ 
++ #ifdef WIN32
++-#define FCGI_LOG_EMERG          __FILE__,__LINE__,APLOG_EMERG,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_ALERT          __FILE__,__LINE__,APLOG_ALERT,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_CRIT           __FILE__,__LINE__,APLOG_CRIT,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_ERR            __FILE__,__LINE__,APLOG_ERR,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_WARN           __FILE__,__LINE__,APLOG_WARNING,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_NOTICE         __FILE__,__LINE__,APLOG_NOTICE,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_INFO           __FILE__,__LINE__,APLOG_INFO,APR_FROM_OS_ERROR(GetLastError())
++-#define FCGI_LOG_DEBUG          __FILE__,__LINE__,APLOG_DEBUG,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_EMERG          APLOG_MARK,APLOG_EMERG,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_ALERT          APLOG_MARK,APLOG_ALERT,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_CRIT           APLOG_MARK,APLOG_CRIT,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_ERR            APLOG_MARK,APLOG_ERR,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_WARN           APLOG_MARK,APLOG_WARNING,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_NOTICE         APLOG_MARK,APLOG_NOTICE,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_INFO           APLOG_MARK,APLOG_INFO,APR_FROM_OS_ERROR(GetLastError())
+++#define FCGI_LOG_DEBUG          APLOG_MARK,APLOG_DEBUG,APR_FROM_OS_ERROR(GetLastError())
++ #else /* !WIN32 */
++-#define FCGI_LOG_EMERG          __FILE__,__LINE__,APLOG_EMERG,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_ALERT          __FILE__,__LINE__,APLOG_ALERT,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_CRIT           __FILE__,__LINE__,APLOG_CRIT,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_ERR            __FILE__,__LINE__,APLOG_ERR,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_WARN           __FILE__,__LINE__,APLOG_WARNING,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_NOTICE         __FILE__,__LINE__,APLOG_NOTICE,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_INFO           __FILE__,__LINE__,APLOG_INFO,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_DEBUG          __FILE__,__LINE__,APLOG_DEBUG,APR_FROM_OS_ERROR(errno)
++-#endif
++-
++-#define FCGI_LOG_EMERG_ERRNO    __FILE__,__LINE__,APLOG_EMERG,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_ALERT_ERRNO    __FILE__,__LINE__,APLOG_ALERT,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_CRIT_ERRNO     __FILE__,__LINE__,APLOG_CRIT,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_ERR_ERRNO      __FILE__,__LINE__,APLOG_ERR,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_WARN_ERRNO     __FILE__,__LINE__,APLOG_WARNING,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_NOTICE_ERRNO   __FILE__,__LINE__,APLOG_NOTICE,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_INFO_ERRNO     __FILE__,__LINE__,APLOG_INFO,APR_FROM_OS_ERROR(errno)
++-#define FCGI_LOG_DEBUG_ERRNO    __FILE__,__LINE__,APLOG_DEBUG,APR_FROM_OS_ERROR(errno)
++-
++-#define FCGI_LOG_EMERG_NOERRNO    __FILE__,__LINE__,APLOG_EMERG,0
++-#define FCGI_LOG_ALERT_NOERRNO    __FILE__,__LINE__,APLOG_ALERT,0
++-#define FCGI_LOG_CRIT_NOERRNO     __FILE__,__LINE__,APLOG_CRIT,0
++-#define FCGI_LOG_ERR_NOERRNO      __FILE__,__LINE__,APLOG_ERR,0
++-#define FCGI_LOG_WARN_NOERRNO     __FILE__,__LINE__,APLOG_WARNING,0
++-#define FCGI_LOG_NOTICE_NOERRNO   __FILE__,__LINE__,APLOG_NOTICE,0
++-#define FCGI_LOG_INFO_NOERRNO     __FILE__,__LINE__,APLOG_INFO,0
++-#define FCGI_LOG_DEBUG_NOERRNO    __FILE__,__LINE__,APLOG_DEBUG,0
+++#define FCGI_LOG_EMERG          APLOG_MARK,APLOG_EMERG,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_ALERT          APLOG_MARK,APLOG_ALERT,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_CRIT           APLOG_MARK,APLOG_CRIT,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_ERR            APLOG_MARK,APLOG_ERR,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_WARN           APLOG_MARK,APLOG_WARNING,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_NOTICE         APLOG_MARK,APLOG_NOTICE,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_INFO           APLOG_MARK,APLOG_INFO,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_DEBUG          APLOG_MARK,APLOG_DEBUG,APR_FROM_OS_ERROR(errno)
+++#endif
+++
+++#define FCGI_LOG_EMERG_ERRNO    APLOG_MARK,APLOG_EMERG,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_ALERT_ERRNO    APLOG_MARK,APLOG_ALERT,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_CRIT_ERRNO     APLOG_MARK,APLOG_CRIT,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_ERR_ERRNO      APLOG_MARK,APLOG_ERR,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_WARN_ERRNO     APLOG_MARK,APLOG_WARNING,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_NOTICE_ERRNO   APLOG_MARK,APLOG_NOTICE,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_INFO_ERRNO     APLOG_MARK,APLOG_INFO,APR_FROM_OS_ERROR(errno)
+++#define FCGI_LOG_DEBUG_ERRNO    APLOG_MARK,APLOG_DEBUG,APR_FROM_OS_ERROR(errno)
+++
+++#define FCGI_LOG_EMERG_NOERRNO    APLOG_MARK,APLOG_EMERG,0
+++#define FCGI_LOG_ALERT_NOERRNO    APLOG_MARK,APLOG_ALERT,0
+++#define FCGI_LOG_CRIT_NOERRNO     APLOG_MARK,APLOG_CRIT,0
+++#define FCGI_LOG_ERR_NOERRNO      APLOG_MARK,APLOG_ERR,0
+++#define FCGI_LOG_WARN_NOERRNO     APLOG_MARK,APLOG_WARNING,0
+++#define FCGI_LOG_NOTICE_NOERRNO   APLOG_MARK,APLOG_NOTICE,0
+++#define FCGI_LOG_INFO_NOERRNO     APLOG_MARK,APLOG_INFO,0
+++#define FCGI_LOG_DEBUG_NOERRNO    APLOG_MARK,APLOG_DEBUG,0
++ 
++ #else /* !APACHE2 */
++ 
++Index: libapache-mod-fastcgi/mod_fastcgi.c
++===================================================================
++--- libapache-mod-fastcgi.orig/mod_fastcgi.c	2012-03-07 14:29:04.017047773 +0100
+++++ libapache-mod-fastcgi/mod_fastcgi.c	2012-03-07 14:29:07.841272721 +0100
++@@ -97,6 +97,10 @@
++ } while (0)
++ #endif
++ 
+++#ifdef APACHE24
+++module AP_MODULE_DECLARE_DATA fastcgi_module;
+++#endif
+++
++ /*
++  * Global variables
++  */
++@@ -3014,7 +3018,11 @@
++     ap_hook_fixups(fixups, NULL, NULL, APR_HOOK_MIDDLE); 
++ }
++ 
+++#ifdef APACHE24
+++AP_DECLARE_MODULE(fastcgi) =
+++#else
++ module AP_MODULE_DECLARE_DATA fastcgi_module =
+++#endif
++ {
++     STANDARD20_MODULE_STUFF,
++     fcgi_config_create_dir_config,  /* per-directory config creator */
+diff --git a/debian/patches/byte-fix-cast-warning-in-fcgi_config.diff b/debian/patches/byte-fix-cast-warning-in-fcgi_config.diff
+new file mode 100644
+index 0000000..22882ac
+--- /dev/null
++++ b/debian/patches/byte-fix-cast-warning-in-fcgi_config.diff
+@@ -0,0 +1,13 @@
++Index: libapache-mod-fastcgi/fcgi_config.c
++===================================================================
++--- libapache-mod-fastcgi.orig/fcgi_config.c	2012-03-07 14:44:07.526739982 +0100
+++++ libapache-mod-fastcgi/fcgi_config.c	2012-03-07 14:44:17.712849230 +0100
++@@ -1204,7 +1204,7 @@
++     if (compat && strcasecmp(compat, "-compat"))
++         return ap_psprintf(cmd->temp_pool, "%s: unknown option: \"%s\"", cmd->cmd->name, compat);
++ 
++-    switch((int)cmd->info) {
+++    switch((intptr_t)cmd->info) {
++         case FCGI_AUTH_TYPE_AUTHENTICATOR:
++             dir_config->authenticator = auth_server;
++             dir_config->authenticator_options |= (compat) ? FCGI_COMPAT : 0;
+diff --git a/debian/patches/byte-new-packet-type-byte_acc.diff b/debian/patches/byte-new-packet-type-byte_acc.diff
+new file mode 100644
+index 0000000..2c7f75c
+--- /dev/null
++++ b/debian/patches/byte-new-packet-type-byte_acc.diff
+@@ -0,0 +1,211 @@
++Index: libapache-mod-fastcgi/fcgi_protocol.h
++===================================================================
++--- libapache-mod-fastcgi.orig/fcgi_protocol.h	2012-03-07 14:28:59.015865586 +0100
+++++ libapache-mod-fastcgi/fcgi_protocol.h	2012-03-07 14:29:03.986142206 +0100
++@@ -52,7 +52,8 @@
++ #define FCGI_DATA                8
++ #define FCGI_GET_VALUES          9
++ #define FCGI_GET_VALUES_RESULT  10
++-#define FCGI_UNKNOWN_TYPE       11
+++#define FCGI_BYTE_ACC           15
+++#define FCGI_UNKNOWN_TYPE       16
++ #define FCGI_MAXTYPE (FCGI_UNKNOWN_TYPE)
++ 
++ /*
++@@ -108,6 +109,50 @@
++ #define FCGI_OVERLOADED       2
++ #define FCGI_UNKNOWN_ROLE     3
++ 
+++/*
+++ * Byte - AAH - define Byte data structures for BSD accounting
+++ */
+++
+++typedef struct {
+++    unsigned char ownSystemTimeB7;
+++    unsigned char ownSystemTimeB6;
+++    unsigned char ownSystemTimeB5;
+++    unsigned char ownSystemTimeB4;
+++    unsigned char ownSystemTimeB3;
+++    unsigned char ownSystemTimeB2;
+++    unsigned char ownSystemTimeB1;
+++    unsigned char ownSystemTimeB0;
+++
+++    unsigned char ownUserTimeB7;
+++    unsigned char ownUserTimeB6;
+++    unsigned char ownUserTimeB5;
+++    unsigned char ownUserTimeB4;
+++    unsigned char ownUserTimeB3;
+++    unsigned char ownUserTimeB2;
+++    unsigned char ownUserTimeB1;
+++    unsigned char ownUserTimeB0;
+++
+++    unsigned char childSystemTimeB7;
+++    unsigned char childSystemTimeB6;
+++    unsigned char childSystemTimeB5;
+++    unsigned char childSystemTimeB4;
+++    unsigned char childSystemTimeB3;
+++    unsigned char childSystemTimeB2;
+++    unsigned char childSystemTimeB1;
+++    unsigned char childSystemTimeB0;
+++
+++    unsigned char childUserTimeB7;
+++    unsigned char childUserTimeB6;
+++    unsigned char childUserTimeB5;
+++    unsigned char childUserTimeB4;
+++    unsigned char childUserTimeB3;
+++    unsigned char childUserTimeB2;
+++    unsigned char childUserTimeB1;
+++    unsigned char childUserTimeB0;
+++
+++    unsigned char reserved[8];
+++} FCGI_ByteAccBody;
+++
++ 
++ /*
++  * Variable names for FCGI_GET_VALUES / FCGI_GET_VALUES_RESULT records
++Index: libapache-mod-fastcgi/fcgi_protocol.c
++===================================================================
++--- libapache-mod-fastcgi.orig/fcgi_protocol.c	2012-03-07 14:28:59.052540943 +0100
+++++ libapache-mod-fastcgi/fcgi_protocol.c	2012-03-07 14:29:03.996101902 +0100
++@@ -475,8 +475,8 @@
++                         ap_log_rerror(FCGI_LOG_ERR_NOERRNO, fr->r,
++                             "FastCGI: comm with server \"%s\" aborted: protocol error: "
++                             "invalid FCGI_END_REQUEST size: "
++-                            "%d != sizeof(FCGI_EndRequestBody)(%d)",
++-                            fr->fs_path, fr->dataLen, sizeof(FCGI_EndRequestBody));
+++                            "%d != sizeof(FCGI_EndRequestBody)(%ld)",
+++                            fr->fs_path, fr->dataLen, (unsigned long) sizeof(FCGI_EndRequestBody));
++                         return HTTP_INTERNAL_SERVER_ERROR;
++                     }
++                     fr->readingEndRequestBody = TRUE;
++@@ -508,6 +508,92 @@
++                     fr->readingEndRequestBody = FALSE;
++                 }
++                 break;
+++	    case FCGI_BYTE_ACC:
+++		/* Look in our state variable if we are already reading the request
+++		   NB that this is a multiplexed protocol, so the request might span
+++		   multiple packets. Therefore we read and if that is all, save times */
+++
+++                if (!fr->readingByteAccBody) {
+++                    if (fr->dataLen != sizeof(FCGI_ByteAccBody)) {
+++                        ap_log_rerror(FCGI_LOG_ERR_NOERRNO, fr->r,
+++                            "FastCGI: comm with server \"%s\" aborted: protocol error: "
+++                            "invalid FCGI_BYTE_ACC size: "
+++                            "%d != sizeof(FCGI_EndRequestBody)(%ld)",
+++                            fr->fs_path, fr->dataLen, (unsigned long) sizeof(FCGI_ByteAccBody));
+++
+++                        return HTTP_INTERNAL_SERVER_ERROR;
+++                    }
+++                    fr->readingByteAccBody = TRUE;
+++                }
+++
+++		/* Check to see if there is still content left to read. If so, read it */
+++                if (len>0) {
+++                    fcgi_buf_get_to_buf(fr->byteAccBufPtr, fr->serverInputBuffer, len);
+++                    fr->dataLen -= len;
+++                }
+++
+++		/* If all data is exhausted, save all usage info */
+++                if (fr->dataLen == 0) {
+++                    FCGI_ByteAccBody *byteAccBody = &fr->byteAccBody;
+++                    fcgi_buf_get_to_block(
+++                        fr->byteAccBufPtr, (char *) &fr->byteAccBody,
+++                        sizeof(FCGI_ByteAccBody));
+++
+++			/* Calculate the times. Bitshift the simple 8-bit values into a 64-bit unsigned long)
+++			     We cast the 8-bit chars to unsigned long first, otherwise gcc will complain */
+++
+++			fr->utime = 	  ((uint64_t) (byteAccBody->ownUserTimeB7 & 0xff) << 8 * 7) 
+++				 	+ ((uint64_t) (byteAccBody->ownUserTimeB6 & 0xff) << 8 * 6)
+++				 	+ ((uint64_t) (byteAccBody->ownUserTimeB5 & 0xff) << 8 * 5)
+++				 	+ ((uint64_t) (byteAccBody->ownUserTimeB4 & 0xff) << 8 * 4)
+++				 	+ ((uint64_t) (byteAccBody->ownUserTimeB3 & 0xff) << 8 * 3)
+++				 	+ ((uint64_t) (byteAccBody->ownUserTimeB2 & 0xff) << 8 * 2)
+++			                + ((uint64_t) (byteAccBody->ownUserTimeB1 & 0xff) << 8 * 1)
+++					+ ((uint64_t) (byteAccBody->ownUserTimeB0 & 0xff) << 8 * 0);
+++
+++			fr->stime = 	  ((uint64_t) (byteAccBody->ownSystemTimeB7 & 0xff) << 8 * 7) 
+++				 	+ ((uint64_t) (byteAccBody->ownSystemTimeB6 & 0xff) << 8 * 6)
+++				 	+ ((uint64_t) (byteAccBody->ownSystemTimeB5 & 0xff) << 8 * 5)
+++				 	+ ((uint64_t) (byteAccBody->ownSystemTimeB4 & 0xff) << 8 * 4)
+++				 	+ ((uint64_t) (byteAccBody->ownSystemTimeB3 & 0xff) << 8 * 3)
+++				 	+ ((uint64_t) (byteAccBody->ownSystemTimeB2 & 0xff) << 8 * 2)
+++			                + ((uint64_t) (byteAccBody->ownSystemTimeB1 & 0xff) << 8 * 1)
+++					+ ((uint64_t) (byteAccBody->ownSystemTimeB0 & 0xff) << 8 * 0);
+++
+++			fr->cutime = 	  ((uint64_t) (byteAccBody->childUserTimeB7 & 0xff) << 8 * 7) 
+++				 	+ ((uint64_t) (byteAccBody->childUserTimeB6 & 0xff) << 8 * 6)
+++				 	+ ((uint64_t) (byteAccBody->childUserTimeB5 & 0xff) << 8 * 5)
+++				 	+ ((uint64_t) (byteAccBody->childUserTimeB4 & 0xff) << 8 * 4)
+++				 	+ ((uint64_t) (byteAccBody->childUserTimeB3 & 0xff) << 8 * 3)
+++				 	+ ((uint64_t) (byteAccBody->childUserTimeB2 & 0xff) << 8 * 2)
+++			                + ((uint64_t) (byteAccBody->childUserTimeB1 & 0xff) << 8 * 1)
+++					+ ((uint64_t) (byteAccBody->childUserTimeB0 & 0xff) << 8 * 0);
+++
+++			fr->cstime = 	  ((uint64_t) (byteAccBody->childSystemTimeB7 & 0xff) << 8 * 7) 
+++				 	+ ((uint64_t) (byteAccBody->childSystemTimeB6 & 0xff) << 8 * 6)
+++				 	+ ((uint64_t) (byteAccBody->childSystemTimeB5 & 0xff) << 8 * 5)
+++				 	+ ((uint64_t) (byteAccBody->childSystemTimeB4 & 0xff) << 8 * 4)
+++				 	+ ((uint64_t) (byteAccBody->childSystemTimeB3 & 0xff) << 8 * 3)
+++				 	+ ((uint64_t) (byteAccBody->childSystemTimeB2 & 0xff) << 8 * 2)
+++			                + ((uint64_t) (byteAccBody->childSystemTimeB1 & 0xff) << 8 * 1)
+++					+ ((uint64_t) (byteAccBody->childSystemTimeB0 & 0xff) << 8 * 0);
+++
+++		    ap_log_rerror(FCGI_LOG_DEBUG_NOERRNO, fr->r,
+++			"FastCGI: Byte packet processed: utime is %llu, stime is %llu, cutime is %llu, cstime = %llu", (unsigned long long int) fr->utime, (unsigned long long int) fr->stime, (unsigned long long int) fr->cutime, (unsigned long long int) fr->cstime);
+++
+++		    /* Set the request notes so we can print the rusage with mod_log through environment variables */
+++		    request_rec *last = fr->r;
+++                    while (last->next)
+++			last = last->next; // find the last request, we insert notes there
+++
+++		    apr_table_setn(last->notes, "ACC_utime", apr_psprintf(last->pool,  "%llu", (unsigned long long int) fr->utime));
+++		    apr_table_setn(last->notes, "ACC_stime", apr_psprintf(last->pool,  "%llu", (unsigned long long int) fr->stime));
+++		    apr_table_setn(last->notes, "ACC_cutime", apr_psprintf(last->pool, "%llu", (unsigned long long int) fr->cutime));
+++		    apr_table_setn(last->notes, "ACC_cstime", apr_psprintf(last->pool, "%llu", (unsigned long long int) fr->cstime));
+++
+++                    fr->readingByteAccBody = FALSE;
+++                }
+++		break;
++             case FCGI_GET_VALUES_RESULT:
++                 /* XXX coming soon */
++             case FCGI_UNKNOWN_TYPE:
++Index: libapache-mod-fastcgi/fcgi.h
++===================================================================
++--- libapache-mod-fastcgi.orig/fcgi.h	2012-03-07 14:28:59.034032444 +0100
+++++ libapache-mod-fastcgi/fcgi.h	2012-03-07 14:29:04.005720240 +0100
++@@ -300,6 +300,17 @@
++     Buffer *erBufPtr;
++     int exitStatus;
++     int exitStatusSet;
+++
+++    /* Byte - AAH */
+++    FCGI_ByteAccBody byteAccBody;
+++    Buffer *byteAccBufPtr;
+++    int readingByteAccBody;
+++    uint64_t utime;
+++    uint64_t stime;
+++    uint64_t cutime;
+++    uint64_t cstime;
+++    /* End Byte - AAH */
+++
++     unsigned int requestId;
++     int eofSent;
++     int role;                       /* FastCGI Role: Authorizer or Responder */
++Index: libapache-mod-fastcgi/mod_fastcgi.c
++===================================================================
++--- libapache-mod-fastcgi.orig/mod_fastcgi.c	2012-03-07 14:28:59.073974365 +0100
+++++ libapache-mod-fastcgi/mod_fastcgi.c	2012-03-07 14:29:04.017047773 +0100
++@@ -2572,6 +2572,11 @@
++ #endif    
++ 	}
++ 
+++    /* Byte AAH */
+++    fr->byteAccBufPtr = fcgi_buf_new(p, sizeof(FCGI_ByteAccBody) + 1);
+++    fr->readingByteAccBody = 1;
+++    /* End Byte AAH */
+++
++     set_uid_n_gid(r, &fr->user, &fr->group);
++ 
++     *frP = fr;
+diff --git a/debian/patches/doc-misc-typo-fix.diff b/debian/patches/doc-misc-typo-fix.diff
+new file mode 100644
+index 0000000..389c75b
+--- /dev/null
++++ b/debian/patches/doc-misc-typo-fix.diff
+@@ -0,0 +1,19 @@
++#! /bin/sh /usr/share/dpatch/dpatch-run
++## by Troestler Christophe <Christophe.Troestler@umh.ac.be>
++##
++## All lines beginning with `## DP:' are a description of the patch.
++## DP: fix for document dead link 
++## DP: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=288270
++
++@DPATCH@
++--- libapache-mod-fastcgi-2.4.6.orig/docs/mod_fastcgi.html
+++++ libapache-mod-fastcgi-2.4.6/docs/mod_fastcgi.html
++@@ -67,7 +67,7 @@
++         </P>
++         <P>
++             FastCGI applications under <CODE>mod_fastcgi</CODE> are defined as one of three types: static, dynamic, or
++-            external. They&#39;re configured using the <A HREF="#fastcgiserver">FastCgiServer</A>, <A HREF=
+++            external. They&#39;re configured using the <A HREF="#FastCgiServer">FastCgiServer</A>, <A HREF=
++             "#FastCgiConfig">FastCgiConfig</A>, and <A HREF="#FastCgiExternalServer">FastCgiExternalServer</A> <A HREF=
++             "#directives">directives</A> respectively. Any URI that Apache identifies as a FastCGI application and
++             which hasn&#39;t been explicitly configured using a <A HREF="#fastcgiserver">FastCgiServer</A> or <A HREF=
+diff --git a/debian/patches/series b/debian/patches/series
+new file mode 100644
+index 0000000..73b9919
+--- /dev/null
++++ b/debian/patches/series
+@@ -0,0 +1,4 @@
++doc-misc-typo-fix.diff
++byte-new-packet-type-byte_acc.diff
++byte-compile-against-apache24.diff
++byte-fix-cast-warning-in-fcgi_config.diff
+diff --git a/debian/rules b/debian/rules
+index 8edbf37..4259a1f 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -1,50 +1,37 @@
+ #!/usr/bin/make -f
+-CFLAGS = -O2 -Wall
+-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+-CFLAGS += -g
+-endif
+-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+-INSTALL_PROGRAM += -s
+-endif
+ 
+-binary: binary-indep binary-arch
++include /usr/share/cdbs/1/rules/debhelper.mk
++include /usr/share/cdbs/1/class/langcore.mk
++include /usr/share/cdbs/1/class/makefile-vars.mk
+ 
+-binary-indep:
++APACHE2_VERSION=`dpkg -s apache2-prefork-dev apache2-threaded-dev 2>/dev/null |grep Version: | awk '{print $$2}'`
+ 
+-binary-arch: build install
+-	dh_testdir
+-	dh_testroot
+-	#dh_installchangelogs CHANGES
+-	dh_installdocs docs/mod_fastcgi.html CHANGES
+-	dh_installdeb
+-	dh_fixperms
+-	dh_shlibdeps
+-	dh_compress
+-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+-	dh_strip
+-endif
+-	dh_md5sums
+-	dh_gencontrol
+-	dh_builddeb
++DEB_BUILDDIR = $(CURDIR)/build-tmp
++DEB_BUILDDIR_libapache2-mod-fastcgi = $(DEB_BUILDDIR)/20
++DEB_DESTDIR_libapache2-mod-fastcgi = $(CURDIR)/debian/libapache2-mod-fastcgi
++DEB_FIXPERMS_EXCLUDE = var/lib/apache2/fastcgi var/lib/apache/fastcgi
+ 
+-build: build-stamp
+-build-stamp:
+-	dh_testdir
+-	CFLAGS="$(CFLAGS)" /usr/bin/apxs -o mod_fastcgi.so -c *.c
+-	touch build-stamp
+-	
+-clean:
+-	dh_testdir
+-	rm -f build-stamp
+-	-rm -f *.o mod_fastcgi.so			
+-	dh_clean build-stamp
++AP2_MAKE_DEFS = top_dir=/usr/share/apache2 \
++	APXS=apxs2 APACHECTL=apachectl2 \
++	LIBTOOL="libtool --tag=CC" SH_LIBTOOL="libtool --tag=CC" \
++	INCLUDES="-I/usr/include/apache2 `pkg-config --cflags apr-1`"
+ 
+-install:
+-	dh_testdir
+-	dh_installdirs
+-	mkdir -p debian/tmp/usr/lib/apache/1.3
+-	cp mod_fastcgi.so debian/tmp/usr/lib/apache/1.3/
+-	chmod 644 debian/tmp/usr/lib/apache/1.3/mod_fastcgi.so
+-	cp debian/500mod_fastcgi.info debian/tmp/usr/lib/apache/1.3/		
+-	
+-.PHONY: binary binary-arch binary-indep clean build install 
++configure/libapache2-mod-fastcgi::
++	cp -a *.c *.h *.mk .deps $(DEB_BUILDDIR_$(cdbs_curpkg))
++	cp -a Makefile.AP2 $(DEB_BUILDDIR_$(cdbs_curpkg))
++
++build/libapache2-mod-fastcgi::
++	$(DEB_MAKE_INVOKE) -C $(DEB_BUILDDIR_$(cdbs_curpkg)) $(AP2_MAKE_DEFS) -f Makefile.AP2
++
++install/libapache2-mod-fastcgi::
++	mkdir -p $(DEB_DESTDIR_$(cdbs_curpkg))/usr/lib/apache2/modules
++	install -m 644 $(DEB_BUILDDIR_$(cdbs_curpkg))/.libs/mod_fastcgi.so \
++	  $(DEB_DESTDIR_$(cdbs_curpkg))/usr/lib/apache2/modules
++	mkdir -p $(DEB_DESTDIR_$(cdbs_curpkg))/etc/apache2/mods-available
++	install -m 644 debian/fastcgi.load \
++	  $(DEB_DESTDIR_$(cdbs_curpkg))/etc/apache2/mods-available
++	install -m 644 debian/fastcgi.conf2 \
++	  $(DEB_DESTDIR_$(cdbs_curpkg))/etc/apache2/mods-available/fastcgi.conf
++	mkdir -p $(DEB_DESTDIR_$(cdbs_curpkg))/var/lib/apache2/fastcgi
++	chown www-data:www-data $(DEB_DESTDIR_$(cdbs_curpkg))/var/lib/apache2/fastcgi
++	chmod 755 $(DEB_DESTDIR_$(cdbs_curpkg))/var/lib/apache2/fastcgi
+diff --git a/debian/source/format b/debian/source/format
+new file mode 100644
+index 0000000..163aaf8
+--- /dev/null
++++ b/debian/source/format
+@@ -0,0 +1 @@
++3.0 (quilt)
+diff --git a/debian/watch b/debian/watch
+new file mode 100644
+index 0000000..317f6b3
+--- /dev/null
++++ b/debian/watch
+@@ -0,0 +1,5 @@
++version=2
++
++http://www.fastcgi.com/dist/ \
++	mod_fastcgi-([\d.]+)\.tar\.gz \
++	debian uupdate

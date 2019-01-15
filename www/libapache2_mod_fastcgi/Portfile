@@ -1,0 +1,62 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+# Name:             Using the same name as Debian does, if
+#                   someone is searching the name for guides, etc.
+name                libapache2_mod_fastcgi
+github.setup        ByteInternet libapache-mod-fastcgi 2.4.7_0910052141 upstream/
+
+maintainers         none openmaintainer
+categories          www
+license             permissive
+platforms           darwin
+
+description         A fork of the mod_fastcgi code that compiles against Apache 2.4.
+long_description    ${description}
+
+homepage            https://github.com/ByteInternet/libapache-mod-fastcgi/
+
+checksums           rmd160 fdfca628b822f5480b436fac3a3376b291cc5ec5 \
+                    sha256 5f2526cc8a393f70f7632ce244a13ef91652e183fa09378b7bc2d1d69048c55a \
+                    size 102434
+
+depends_lib         port:apache2
+
+patch.pre_args      -p1
+patchfiles          patch-release-to-current-byte.diff \
+                    byte-compile-against-apache24.diff
+
+set apachectl       ${prefix}/sbin/apachectl
+set apxs            ${prefix}/bin/apxs
+set mdir            ${prefix}/lib/apache2/modules
+set ddir            ${prefix}/share/doc/${name}
+
+configure {
+    file copy ${worksrcpath}/Makefile.AP2 ${worksrcpath}/Makefile
+    reinplace "s|/usr/local/apache2|${prefix}/www/apache2|g" ${worksrcpath}/Makefile
+    reinplace "s|apachectl|${apachectl}|g" ${worksrcpath}/Makefile
+    reinplace "s|apxs|${apxs}|g" ${worksrcpath}/Makefile
+}
+
+build.args      INCLUDES=-I${prefix}/include/apache2
+
+destroot {
+    xinstall -d -m 755 ${destroot}${mdir} ${destroot}${ddir}
+    xinstall -m 755 ${worksrcpath}/.libs/mod_fastcgi.so ${destroot}${mdir}
+    xinstall -m 644 -W ${worksrcpath}/docs/ LICENSE.TERMS mod_fastcgi.html ${destroot}${ddir}
+}
+
+notes "
+If this your first install, you might want to enable ${name} in Apache:
+
+    \$ cd ${mdir}
+    \$ sudo ${apxs} -a -e -n \"fastcgi\" mod_fastcgi.so
+
+And then relaunch Apache:
+
+    \$ sudo apachectl restart
+"
+
+livecheck.type          none
