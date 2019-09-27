@@ -1,0 +1,111 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           active_variants 1.1
+
+name                mariatop
+set script_name     mytop
+version             1.9.1
+
+categories          sysutils perl
+platforms           darwin
+license             GPL-2
+maintainers         {iefdev.se:eric @iEFdev} \
+                    {michaelld @michaelld} \
+                    openmaintainer
+homepage            https://mariadb.org/
+
+description         sets up the bundled version of '${script_name}' in MariaDB
+long_description    This port ${description}. There's no default variant for \
+                    MariaDB. You must add that manually, to also get the \
+                    correct variant of dependencies.
+
+conflicts           p5-mytop
+use_configure       no
+build               {}
+livecheck.type      none
+
+# --- Perl5 ---
+# 5.30 is not in dependency
+variant perl5_26 conflicts perl5_28 description "Use perl5.26" {}
+variant perl5_28 conflicts perl5_26 description "Use perl5.28" {}
+
+foreach branch {26 28} {
+    conflicts-append p5.${branch}-mytop
+    if {[variant_isset perl5_${branch}]} {
+        set perl_version    5.${branch}
+    }
+}
+
+if {![variant_isset perl5_26] && ![variant_isset perl5_28]} {
+    default_variants +perl5_28
+    set perl_version    5.28
+}
+
+# --- MariaDB ---
+# map variant and port with a dict
+set mariadb_dict    [dict create mariadb mariadb mariadb10_0 mariadb-10.0 \
+                                 mariadb10_1 mariadb-10.1 mariadb10_2 mariadb-10.2]
+
+set mariadb_version [lindex ${mariadb_dict} end end]
+
+depends_lib         port:perl${perl_version} \
+                    port:p${perl_version}-term-readkey
+
+# Loop the variants
+foreach _variant [dict keys ${mariadb_dict}] {
+    set _port [dict get $mariadb_dict ${_variant}]
+    set _conflicts [regsub ${_variant} [dict keys ${mariadb_dict}] {}]
+
+    variant ${_variant} conflicts ${_conflicts} description "Set up mytop for ${_port}" {
+        set rav_no {mysql4 mysql5 mysql51 mysql55 mysql56 mysql57 percona}
+        require_active_variants p${perl_version}-dbd-mysql ${_variant} ${rav_no}
+    }
+
+    # match variant
+    if {[variant_isset ${_variant}]} {
+        set mariadb_version     ${_port}
+        depends_lib-append      port:${_port} \
+                                port:p${perl_version}-dbd-mysql
+    }
+}
+
+# Edit vars, not code
+set mytop_location      ${prefix}/lib/${mariadb_version}/bin/mytop
+set sample_config       ${prefix}/etc/${mariadb_version}/sample_config.mytop
+set shebang             ${prefix}/bin/perl${perl_version}
+
+post-destroot {
+    reinplace -q "s|/usr/bin/perl|${shebang}|" ${mytop_location}
+    reinplace -q "s|use 5.005|use 5.026|" ${mytop_location}
+
+    if {![file exists ${sample_config}]} {
+        set sample_conf [open "${destroot}${sample_config}" w 0644]
+        puts ${sample_conf} "#"
+        puts ${sample_conf} "# ~/.${script_name}, or /var/root/.${script_name}"
+        puts ${sample_conf} "#"
+        puts ${sample_conf} ""
+        puts ${sample_conf} "user = root"
+        puts ${sample_conf} "pass ="
+        puts ${sample_conf} "host = localhost"
+        puts ${sample_conf} "db = mysql"
+        puts ${sample_conf} "delay = 5"
+        puts ${sample_conf} "port = 3306"
+        puts ${sample_conf} "socket ="
+        puts ${sample_conf} "batchmode = 0"
+        puts ${sample_conf} "header = 1"
+        puts ${sample_conf} "color = 1"
+        puts ${sample_conf} "idle = 1"
+        close ${sample_conf}
+    }
+}
+
+notes "
+A sample config file have been placed in: ${sample_config}
+
+Put it in your (or root's) home directory:
+   - /Users/$::env(USER)/.${script_name}
+   - /var/root/.${script_name}      *
+
+\[*\] …to run '${script_name}' without 'sudo'
+"
